@@ -1,8 +1,24 @@
-import telebot
 import os
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import telebot
 
 API_TOKEN = os.environ.get('API_TOKEN')
 bot = telebot.TeleBot(API_TOKEN)
+
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b'Bot is running!')
+    def log_message(self, format, *args):
+        pass
+
+def run_server():
+    port = int(os.environ.get('PORT', 8080))
+    HTTPServer(('0.0.0.0', port), Handler).serve_forever()
+
+threading.Thread(target=run_server, daemon=True).start()
 
 HELP_MESSAGE = (
     "Here's what I can do:\n\n"
@@ -30,24 +46,22 @@ def help_command(message):
 @bot.message_handler(commands=['cake'])
 def cake_recipe(message):
     text = (
-        "🎂 *Classic Cake Recipes*\n\n"
+        "🎂 *Classic Cake Recipe*\n\n"
         "*Ingredients:*\n"
         "🥚 4 eggs\n"
-        "🍚 ½ cup sugar \n"
+        "🍚 ½ cup sugar\n"
         "🫙 ⅓ cup oil\n"
         "🌾 1 cup flour\n"
         "🥄 1 tsp baking powder\n"
-        "✨ 2 tsp vanilla extract\n\n"
+        "✨ 2 tsp vanilla extract\n"
         "🧂 1 pinch salt\n\n"
-        
         "*Instructions:*\n"
-        "1️⃣ Beat egg whites until create foam\n"
+        "1️⃣ Beat egg whites until foamy\n"
         "2️⃣ Mix in egg yolks\n"
         "3️⃣ Add sugar & oil\n"
-        "4️⃣ Fold in flour, baking powder , salt  && now don't use beater just use spatula to stir\n"
+        "4️⃣ Fold in flour, baking powder & salt \\(use spatula, not beater\\)\n"
         "5️⃣ Stir in vanilla extract\n\n"
         "🌡 *Bake:* 170°C for 30 min 🕐"
-        
     )
     bot.send_message(message.chat.id, text, parse_mode='MarkdownV2')
 
